@@ -1,6 +1,1293 @@
 <!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TraXall Kostenrapportage</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script><script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-<style>:root{--o:#f6931c;--ol:#f5945c;--n:#213153;--g:#3e3e40;--bg:#f5f6f8;--line:#d8d9dd}*{box-sizing:border-box}html,body{margin:0;padding:0}body,button,input,select,textarea,table,th,td,canvas{font-family:"Century Gothic","Tw Cen MT",Arial,sans-serif!important}body{background:var(--bg);color:var(--n);overflow-x:hidden}.top{background:linear-gradient(to right,#213153 0%,#213153 100%);color:#fff;padding:16px 24px;position:sticky;top:0;z-index:5}.top h1{margin:0 0 12px;font-size:24px}.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.upload,.btn{border:0;border-radius:7px;background:#fff;color:var(--n);padding:10px 14px;font:700 13px inherit;cursor:pointer}.upload input{display:none}.upload small{display:block;font-weight:400;max-width:190px;overflow:hidden;text-overflow:ellipsis}.btn.primary{color:#fff;background:linear-gradient(to right,#f6931c 0%,#f5945c 100%)}.btn:disabled{opacity:.5}.status{width:100%;font-size:12px}.wrap{width:100%;max-width:1120px;margin:0 auto;padding:18px}#report{width:100%;max-width:1080px;margin:0 auto}.section,.head,.cover{width:100%;max-width:1080px;margin-left:auto;margin-right:auto;overflow:visible}.empty,.section,.head,.cover{background:#fff;border-radius:10px;padding:18px;margin-bottom:16px}.empty{text-align:center;color:#666}.hidden{display:none}.cover{min-height:185mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;page-break-after:always;break-after:page}.cover img{width:65mm;margin-bottom:22mm}.cover h1{font-size:32px;margin:0 0 10px}.cover .client{font-size:25px;font-weight:700;color:var(--g)}.cover .year{font-size:24px;color:var(--o);margin-top:8px}.section{break-inside:avoid-page;page-break-inside:avoid}.section h2{font-size:21px;margin:0 0 14px;padding-bottom:8px;border-bottom:3px solid var(--o)}.chart{height:430px;min-height:430px;position:relative}.chart.tall{height:500px}.chart canvas{display:block;width:100%!important;max-width:100%!important;height:100%!important;margin:0 auto}.supplier{page-break-before:always;break-before:page}.table-block{break-inside:avoid-page;page-break-inside:avoid;margin-bottom:14px}.tbl{width:100%;max-width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;line-height:1.25;margin:0 auto}.tbl th,.tbl td{border:1px solid var(--line);padding:6px;text-align:center;overflow-wrap:anywhere;word-break:normal}.tbl th{background:linear-gradient(to right,#213153 0%,#213153 100%);color:#fff;font-size:11px}.tbl th:first-child,.tbl td:first-child{text-align:center;min-width:180px}.tbl tr:nth-child(even){background:#f7f7f8}.tbl .sub,.tbl .sub td{font-weight:700!important;background:#f6931c!important;color:#fff!important;border-color:#d97908!important;border-top:2px solid #d97908!important}.title{font-weight:700;margin:0 0 6px}@media print{@page{size:A4 landscape;margin:10mm 12mm}html,body{width:100%;margin:0!important;padding:0!important;background:#fff;overflow:visible}.top{display:none}.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}#report{width:100%!important;max-width:none!important;margin:0 auto!important}.section,.head,.cover{width:100%!important;max-width:none!important;margin-left:auto!important;margin-right:auto!important;border-radius:0;overflow:visible}.chart{width:100%!important;height:118mm;min-height:118mm;margin:0 auto}.table-block{width:100%;break-inside:avoid-page;page-break-inside:avoid}.tbl{width:100%!important;max-width:100%!important;margin:0 auto!important}}</style></head><body>
+<style>:root{--o:#f6931c;--ol:#f5945c;--n:#213153;--g:#3e3e40;--bg:#f5f6f8;--line:#d8d9dd}*{box-sizing:border-box}html,body{margin:0;padding:0}body,button,input,select,textarea,table,th,td,canvas{font-family:"Century Gothic","Tw Cen MT",Arial,sans-serif!important}body{background:var(--bg);color:var(--n);overflow-x:hidden}.top{background:linear-gradient(to right,#213153 0%,#213153 100%);color:#fff;padding:16px 24px;position:sticky;top:0;z-index:5}.top h1{margin:0 0 12px;font-size:24px}.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.upload,.btn{border:0;border-radius:7px;background:#fff;color:var(--n);padding:10px 14px;font:700 13px inherit;cursor:pointer}.upload input{display:none}.upload small{display:blockRapportages
+
+<!doctype html>
+<html lang="nl">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>TraXall Kostenrapportage</title>
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script><script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+        <style>
+        :root {
+            --o: #f6931c;
+            --ol: #f5945c;
+            --n: #213153;
+            --g: #3e3e40;
+            --bg: #f5f6f8;
+            --line: #d8d9dd
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        html,
+        body {
+            margin: 0;
+            padding: 0
+        }
+        
+        body,
+        button,
+        input,
+        select,
+        textarea,
+        table,
+        th,
+        td,
+        canvas {
+            font-family: "Century Gothic", "Tw Cen MT", Arial, sans-serif !important
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--n);
+            overflow-x: hidden
+        }
+        
+        .top {
+            background: linear-gradient(to right, #213153 0%, #213153 100%);
+            color: #fff;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 5
+        }
+        
+        .top h1 {
+            margin: 0 0 12px;
+            font-size: 24px
+        }
+        
+        .tools {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+        
+        .upload,
+        .btn {
+            border: 0;
+            border-radius: 7px;
+            background: #fff;
+            color: var(--n);
+            padding: 10px 14px;
+            font: 700 13px inherit;
+            cursor: pointer
+        }
+        
+        .upload input {
+            display: none
+        }
+        
+        .upload small {
+            display: block;
+            font-weight: 400;
+            max-width: 190px;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+        
+        .btn.primary {
+            color: #fff;
+            background: linear-gradient(to right, #f6931c 0%, #f5945c 100%)
+        }
+        
+        .btn:disabled {
+            opacity: .5
+        }
+        
+        .status {
+            width: 100%;
+            font-size: 12px
+        }
+        
+        .wrap {
+            width: 100%;
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 18px
+        }
+        
+        #report {
+            width: 100%;
+            max-width: 1080px;
+            margin: 0 auto
+        }
+        
+        .section,
+        .head,
+        .cover {
+            width: 100%;
+            max-width: 1080px;
+            margin-left: auto;
+            margin-right: auto;
+            overflow: visible
+        }
+        
+        .empty,
+        .section,
+        .head,
+        .cover {
+            background: #fff;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 16px
+        }
+        
+        .empty {
+            text-align: center;
+            color: #666
+        }
+        
+        .hidden {
+            display: none
+        }
+        
+        .cover {
+            min-height: 185mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            page-break-after: always;
+            break-after: page
+        }
+        
+        .cover img {
+            width: 65mm;
+            margin-bottom: 22mm
+        }
+        
+        .cover h1 {
+            font-size: 32px;
+            margin: 0 0 10px
+        }
+        
+        .cover .client {
+            font-size: 25px;
+            font-weight: 700;
+            color: var(--g)
+        }
+        
+        .cover .year {
+            font-size: 24px;
+            color: var(--o);
+            margin-top: 8px
+        }
+        
+        .section {
+            break-inside: avoid-page;
+            page-break-inside: avoid
+        }
+        
+        .section h2 {
+            font-size: 21px;
+            margin: 0 0 14px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid var(--o)
+        }
+        
+        .chart {
+            height: 430px;
+            min-height: 430px;
+            position: relative
+        }
+        
+        .chart.tall {
+            height: 500px
+        }
+        
+        .chart canvas {
+            display: block;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            margin: 0 auto
+        }
+        
+        .supplier {
+            page-break-before: always;
+            break-before: page
+        }
+        
+        .table-block {
+            break-inside: avoid-page;
+            page-break-inside: avoid;
+            margin-bottom: 14px
+        }
+        
+        .tbl {
+            width: 100%;
+            max-width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 11px;
+            line-height: 1.25;
+            margin: 0 auto
+        }
+        
+        .tbl th,
+        .tbl td {
+            border: 1px solid var(--line);
+            padding: 6px;
+            text-align: center;
+            overflow-wrap: anywhere;
+            word-break: normal
+        }
+        
+        .tbl th {
+            background: linear-gradient(to right, #213153 0%, #213153 100%);
+            color: #fff;
+            font-size: 11px
+        }
+        
+        .tbl th:first-child,
+        .tbl td:first-child {
+            text-align: center;
+            min-width: 180px
+        }
+        
+        .tbl tr:nth-child(even) {
+            background: #f7f7f8
+        }
+        
+        .tbl .sub,
+        .tbl .sub td {
+            font-weight: 700 !important;
+            background: #f6931c !important;
+            color: #fff !important;
+            border-color: #d97908 !important;
+            border-top: 2px solid #d97908 !important
+        }
+        
+        .title {
+            font-weight: 700;
+            margin: 0 0 6px
+        }
+        
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 10mm 12mm
+            }
+        
+            html,
+            body {
+                width: 100%;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff;
+                overflow: visible
+            }
+        
+            .top {
+                display: none
+            }
+        
+            .wrap {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important
+            }
+        
+            #report {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 auto !important
+            }
+        
+            .section,
+            .head,
+            .cover {
+                width: 100% !important;
+                max-width: none !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                border-radius: 0;
+                overflow: visible
+            }
+        
+            .chart {
+                width: 100% !important;
+                height: 118mm;
+                min-height: 118mm;
+                margin: 0 auto
+            }
+        
+            .table-block {
+                width: 100%;
+                break-inside: avoid-page;
+                page-break-inside: avoid
+            }
+        
+            .tbl {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important
+            }
+        }
+        </style></head>
+        <body>
+            <header class="top">
+                <h1>TraXall Kostenrapportage</h1>
+                <div class="tools">
+                    <label class="upload">Kosten vorig jaar<input id="prev" type="file" accept=".xlsx,.xls">
+                        <small id="pn">Geen bestand</small>
+                    </label>
+                    <label class="upload">Kosten huidig jaar<input id="cur" type="file" accept=".xlsx,.xls">
+                        <small id="cn">Geen bestand</small>
+                    </label>
+                    <button class="btn primary" id="run">Rapportage maken</button>
+                    <button class="btn" id="ppt" disabled>PowerPoint downloaden</button>
+                    <div id="status" class="status">Upload minimaal Kosten huidig jaar.</div>
+                </div>
+            </header>
+            <main class="wrap">
+                <div id="empty" class="empty">De rapportage verschijnt hier.</div>
+                <div id="report" class="hidden">
+                </div>
+            </main>
+            <script>
+            Chart.register(ChartDataLabels);
+            Chart.defaults.font.family = 'Century Gothic';
+            Chart.defaults.font.size = 14;
+            const M = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'],
+                C = ['#213153', '#f6931c', '#3e3e40', '#596782', '#f5a956', '#69696b', '#8791a5'];
+            const TM = {
+                'Contractuele kosten': ['Contractueel', 1],
+                Brandstof: ['Brandstof', 2],
+                STR: ['Huur', 3],
+                'Schade kosten': ['Schade', 4],
+                Boetes: ['Boetes', 5],
+                'Pool kosten': ['Pool', 6],
+                'Variabele kosten': ['Variabel', 7]
+            };
+            const raw = `Boetes|Boetes|Boetes|Boetes|38
+            Boetes|Administratiekosten Boete|Boetes|Administratiekosten boete|39
+            Variabele kosten|Vervangend vervoer|Variabel|Vervangend vervoer|47
+            Variabele kosten|Poolbeheer|Pool|Pool|46
+            Variabele kosten|Eindafrekening|Variabel|Variabel|48
+            Variabele kosten|Beheervergoeding Pech/Schade|Variabel|Variabel|49
+            Variabele kosten|Wassen|Variabel|Variabel|50
+            Variabele kosten|Toll|Variabel|Variabel|51
+            Variabele kosten|Parkeer kosten|Variabel|Variabel|52
+            Variabele kosten|Overige|Variabel|Variabel|53
+            Variabele kosten|Kentekenpapieren|Variabel|Variabel|54
+            Variabele kosten|Beheer|Variabel|Variabel|55
+            Variabele kosten|Veerpont|Variabel|Variabel|56
+            Variabele kosten|Doorbelaste Hulpverlening|Variabel|Variabel|57
+            Variabele kosten|Sleutels|Variabel|Variabel|58
+            Variabele kosten|Laadpunt|Variabel|Variabel|59
+            Variabele kosten|Verhuizing Laadpunt|Variabel|Variabel|60
+            Variabele kosten|Herstel Laadpunt|Variabel|Variabel|61
+            Variabele kosten|Administratiekosten Tol|Variabel|Variabel|62
+            Variabele kosten|Vierseizoenen banden|Variabel|Variabel|63
+            Variabele kosten|Achterstandsrente|Variabel|Variabel|64
+            Brandstof|Diesel premium|Brandstof|Brandstof|17
+            Brandstof|Benzine premium|Brandstof|Brandstof|18
+            Brandstof|Benzine|Brandstof|Brandstof|19
+            Brandstof|Brandstofpas fee|Brandstof|Brandstof|20
+            Brandstof|Diesel|Brandstof|Brandstof|21
+            Brandstof|Brandstofvoorschot|Brandstof|Brandstof|22
+            Brandstof|Brandstof niet gespecificeerd|Brandstof|Brandstof|23
+            Brandstof|LPG|Brandstof|Brandstof|24
+            Brandstof|Brandstofafrekening|Brandstof|Brandstof|25
+            Brandstof|AdBlue|Brandstof|Brandstof|26
+            Brandstof|Elektriciteit|Brandstof|Brandstof|27
+            STR|Huurtarief STR|Huur|Huurtarief|28
+            STR|Beheervergoeding huur|Huur|Huur|29
+            STR|Kilometerafrekening huur|Huur|Huur|30
+            Contractuele kosten|Leasetarief|Contractueel|Leasetarief|1
+            Contractuele kosten|Contract aanpassing|Contractueel|Contract aanpassing|2
+            Contractuele kosten|Onderhoud|Contractueel|Leasetarief|3
+            Contractuele kosten|Banden Contractueel|Contractueel|Leasetarief|4
+            Contractuele kosten|Verzekering|Contractueel|Leasetarief|5
+            Contractuele kosten|Meerkilometers|Contractueel|Contract aanpassing|6
+            Contractuele kosten|Afschrijving|Contractueel|Leasetarief|7
+            Contractuele kosten|Rente|Contractueel|Leasetarief|8
+            Contractuele kosten|BPM|Contractueel|Leasetarief|9
+            Contractuele kosten|Contractuele Hulpverlening|Contractueel|Leasetarief|10
+            Contractuele kosten|WA/Casco|Contractueel|Leasetarief|11
+            Contractuele kosten|OVI|Contractueel|Leasetarief|12
+            Contractuele kosten|Vervangend vervoer premie|Contractueel|Leasetarief|13
+            Contractuele kosten|MRB|Contractueel|Leasetarief|14
+            Contractuele kosten|SVI|Contractueel|Leasetarief|15
+            Contractuele kosten|Intrest|Contractueel|Leasetarief|16
+            Schade kosten|Schade|Schade|Schade|31
+            Schade kosten|Onderhoud doorbelast|Schade|Onderhoud doorbelast|32
+            Schade kosten|Bandenschade|Schade|Bandenschade|33
+            Schade kosten|Ruitschade|Schade|Ruitschade|34
+            Schade kosten|Overige schadekosten|Schade|Overige schadekosten|35
+            Schade kosten|Diefstal|Schade|Diefstal|36
+            Schade kosten|Eigen risico|Schade|Eigen risico|37
+            Pool kosten|Overige Pool|Pool|Pool|40
+            Pool kosten|Transport Pool|Pool|Pool|41
+            Pool kosten|Inname/uitgifte|Pool|Pool|42
+            Pool kosten|Stalling|Pool|Pool|43
+            Pool kosten|Reiniging|Pool|Pool|44
+            Pool kosten|Schadeherstel Pool|Pool|Pool|45`;
+            const n = v => String(v ?? '').trim().replace(/\s+/g, ' ').toLowerCase(),
+                PM = new Map(raw.split('\n').map(x => {
+                    let a = x.split('|');
+                    return [n(a[0]) + '|' + n(a[1]), {
+                        a: a[2],
+                        b: a[3],
+                        o: +a[4]
+                    }]
+                })),
+                eur = new Intl.NumberFormat('nl-NL', {
+                    style: 'currency',
+                    currency: 'EUR',
+                    maximumFractionDigits: 0
+                }),
+                num = new Intl.NumberFormat('nl-NL', {
+                    maximumFractionDigits: 0
+                });
+            let charts = [],
+                reportState = null;
+            
+            function esc(v) {
+                return String(v ?? '').replace(/[&<>"']/g, c => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                } [c]))
+            }
+            
+            function amt(v) {
+                if (typeof v === 'number') return v;
+                let s = String(v ?? '').replace(/[€\s]/g, '');
+                if (s.includes(',') && s.includes('.')) s = s.lastIndexOf(',') > s.lastIndexOf('.') ? s.replace(/\./g, '').replace(
+                    ',', '.') : s.replace(/,/g, '');
+                else if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+                return Number(s) || 0
+            }
+            
+            function dt(v) {
+                if (v instanceof Date) return v;
+                if (typeof v === 'number') {
+                    let d = XLSX.SSF.parse_date_code(v);
+                    return d ? new Date(d.y, d.m - 1, d.d) : null
+                }
+                let s = String(v || ''),
+                    m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);
+                if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+                m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+                return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null
+            }
+            async function read(f) {
+                let wb = XLSX.read(await f.arrayBuffer(), {
+                        type: 'array',
+                        cellDates: true
+                    }),
+                    r = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
+                        defval: '',
+                        raw: true
+                    }),
+                    need = ['Type_cout', 'Produit', 'Immat', 'Date', 'HT', 'Fournisseur'],
+                    miss = need.filter(x => !Object.keys(r[0] || {}).includes(x));
+                if (miss.length) throw Error(f.name + ': ontbrekende kolommen: ' + miss.join(', '));
+                return r.map(x => {
+                    let d = dt(x.Date),
+                        t = TM[String(x.Type_cout).trim()] || [String(x.Type_cout || 'Onbekend'), 999],
+                        p = PM.get(n(x.Type_cout) + '|' + n(x.Produit));
+                    return {
+                        ...x,
+                        d,
+                        m: d?.getMonth(),
+                        y: d?.getFullYear(),
+                        v: amt(x.HT),
+                        type: t[0],
+                        to: t[1],
+                        a: p?.a || t[0],
+                        b: p?.b || String(x.Produit || 'Onbekend'),
+                        po: p?.o || 999,
+                        prod: String(x.Produit || '').trim(),
+                        plate: String(x.Immat || '').trim(),
+                        sup: String(x.Fournisseur || 'Onbekend').trim()
+                    }
+                }).filter(x => x.d)
+            }
+            const sum = (r, f = () => true) => r.reduce((a, x) => a + (f(x) ? x.v : 0), 0),
+                ms = (r, f = () => true) => M.map((_, m) => sum(r, x => x.m === m && f(x))),
+                yr = r => [...new Set(r.map(x => x.y))].sort().join(', '),
+                months = r => [...new Set(r.map(x => x.m))].sort((a, b) => a - b);
+            
+            function opts(numbers = false) {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Century Gothic',
+                                    size: 15
+                                },
+                                padding: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: c => c.dataset.label + ': ' + (numbers || c.dataset.yAxisID === 'cnt' ? num.format(c.raw) :
+                                    eur.format(c.raw))
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Century Gothic',
+                                    size: 13
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grace: '25%',
+                            ticks: {
+                                font: {
+                                    family: 'Century Gothic',
+                                    size: 12
+                                },
+                                callback: v => numbers ? num.format(v) : eur.format(v)
+                            }
+                        }
+                    }
+                }
+            }
+            const dl = {
+                anchor: 'end',
+                align: 'end',
+                clamp: true,
+                color: '#213153',
+                font: {
+                    family: 'Century Gothic',
+                    size: 12,
+                    weight: 'bold'
+                },
+                formatter: v => v ? eur.format(v) : ''
+            };
+            
+            function mk(id, c) {
+                charts.push(new Chart(document.getElementById(id), c))
+            }
+            
+            function sec(t, b, cl = '') {
+                return `<section class="section ${cl}"><h2>${esc(t)}</h2>${b}</section>`
+            }
+            
+            function can(id, cl = '') {
+                return `<div class="chart ${cl}"><canvas id="${id}"></canvas></div>`
+            }
+            
+            function table(h, r, sub = false) {
+                return `<div class="table-block"><table class="tbl"><thead><tr>${h.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${r.map((x,i)=>`<tr class="${sub&&i===r.length-1?'sub':''}">${x.map((v,j)=>`<td>${j?num.format(Math.round(v||0)):esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
+            }
+            
+            function vc(r, k) {
+                return M.map((_, m) => new Set(r.filter(x => x.m === m && n(x.prod) === (k === 'l' ? 'leasetarief' :
+                    'huurtarief str')).map(x => x.plate).filter(Boolean)).size)
+            }
+            
+            function lm(r, s) {
+                r = r.filter(x => n(x.prod) === 'leasetarief' && (!s || x.sup === s));
+                return M.map((_, m) => {
+                    let z = r.filter(x => x.m === m),
+                        c = new Set(z.map(x => x.plate).filter(Boolean)).size,
+                        t = sum(z);
+                    return {
+                        t,
+                        c,
+                        a: c ? t / c : 0
+                    }
+                })
+            }
+            async function run() {
+                let cf = cur.files[0],
+                    pf = prev.files[0];
+                if (!cf) {
+                    status.textContent = 'Upload eerst Kosten huidig jaar.';
+                    return
+                }
+                try {
+                    run.disabled = true;
+                    let [c, p] = await Promise.all([read(cf), pf ? read(pf) : []]);
+                    build(c, p);
+                    ppt.disabled = false;
+                    status.textContent = 'Rapportage gereed. PowerPoint-export is beschikbaar.'
+                } catch (e) {
+                    status.textContent = e.message
+                } finally {
+                    run.disabled = false
+                }
+            }
+            
+            function build(c, p) {
+                charts.forEach(x => x.destroy());
+                charts = [];
+                let both = p.length > 0,
+                    mo = both ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] : months(c),
+                    lab = mo.map(x => M[x]),
+                    client = [...new Set(c.map(x => String(x.Client_Libellé || '').trim()).filter(Boolean))].join(', ') || 'Klant',
+                    cy = yr(c);
+                reportState = {
+                    c,
+                    p,
+                    both,
+                    mo,
+                    lab,
+                    client,
+                    cy
+                };
+                let h =
+                    `<section class="cover"><img src="logo-traxall.png"><h1>TraXall Kostenrapportage</h1><div class="client">${esc(client)}</div><div class="year">${esc(cy)}</div></section><div class="head"><h1>Kostenrapportage</h1><p>${esc(client)} | ${esc(cy)}</p></div>`;
+                h += sec(both ? 'Totale kosten per maand' : 'Totale kosten', can('tot')) + sec('Totale kosten per kostensoort', can(
+                    'types', 'tall')) + sec('Aantal geprolongeerde voertuigen', can('veh')) + sec(
+                    'Gemiddelde prolongatiekosten en aantal leasevoertuigen (alle leveranciers)', can('all'));
+                let su = [...new Set(c.filter(x => n(x.prod) === 'leasetarief').map(x => x.sup))].sort();
+                su.forEach((s, i) => h += sec('Gemiddelde prolongatiekosten (' + s + ')', can('s' + i) + `<div id="st${i}"></div>`,
+                    'supplier'));
+                h += sec('Gefactureerde kosten alle leveranciers', '<div id="invoices"></div>');
+                report.innerHTML = h;
+                report.classList.remove('hidden');
+                empty.classList.add('hidden');
+                let ct = ms(c),
+                    pt = ms(p);
+                mk('tot', {
+                    type: 'bar',
+                    data: {
+                        labels: lab,
+                        datasets: [{
+                            label: cy,
+                            data: mo.map(m => ct[m]),
+                            backgroundColor: C[0],
+                            order: 2,
+                            datalabels: dl
+                        }, ...(both ? [{
+                            type: 'line',
+                            label: yr(p),
+                            data: mo.map(m => pt[m]),
+                            borderColor: C[1],
+                            backgroundColor: C[1],
+                            borderDash: [7, 5],
+                            borderWidth: 3,
+                            pointRadius: 2,
+                            order: 1,
+                            datalabels: {
+                                display: false
+                            }
+                        }] : [])]
+                    },
+                    options: opts()
+                });
+                let ts = Object.values(TM).sort((a, b) => a[1] - b[1]).map(x => x[0]).filter(t => c.some(x => x.a === t));
+                mk('types', {
+                    type: 'bar',
+                    data: {
+                        labels: lab,
+                        datasets: ts.map((t, i) => ({
+                            label: t,
+                            data: mo.map(m => sum(c, x => x.m === m && x.a === t)),
+                            backgroundColor: C[i % C.length],
+                            order: 2,
+                            datalabels: {
+                                display: false
+                            }
+                        }))
+                    },
+                    options: opts()
+                });
+                let lc = vc(c, 'l'),
+                    hc = vc(c, 'h'),
+                    lp = vc(p, 'l'),
+                    hp = vc(p, 'h'),
+                    prevTotal = lp.map((v, i) => v + hp[i]),
+                    o = opts(true);
+                o.scales.x.stacked = true;
+                o.scales.y.stacked = true;
+                mk('veh', {
+                    type: 'bar',
+                    data: {
+                        labels: lab,
+                        datasets: [{
+                            label: 'Lease ' + cy,
+                            data: mo.map(m => lc[m]),
+                            backgroundColor: C[0],
+                            stack: 'c',
+                            order: 2,
+                            datalabels: {
+                                display: false
+                            }
+                        }, {
+                            label: 'Huur ' + cy,
+                            data: mo.map(m => hc[m]),
+                            backgroundColor: C[2],
+                            stack: 'c',
+                            order: 2,
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'end',
+                                font: {
+                                    family: 'Century Gothic',
+                                    size: 12,
+                                    weight: 'bold'
+                                },
+                                color: '#213153',
+                                formatter: (v, z) => num.format(lc[mo[z.dataIndex]] + hc[mo[z.dataIndex]])
+                            }
+                        }, ...(both ? [{
+                            type: 'line',
+                            label: 'Lease + Huur ' + yr(p),
+                            data: mo.map(m => prevTotal[m]),
+                            borderColor: C[1],
+                            backgroundColor: C[1],
+                            borderDash: [7, 5],
+                            borderWidth: 3,
+                            order: 1,
+                            datalabels: {
+                                display: false
+                            }
+                        }] : [])]
+                    },
+                    options: o
+                });
+                combo('all', lm(c), mo);
+                su.forEach((s, i) => {
+                    let a = lm(c, s);
+                    combo('s' + i, a, mo);
+                    st = document.getElementById('st' + i);
+                    st.innerHTML = '<p class="title">' + esc(s) + '</p>' + table(['Leverancier', ...mo.map(m => M[m])], [
+                        ['Prolongatiekosten', ...mo.map(m => a[m].t)],
+                        ['Aantal voertuigen', ...mo.map(m => a[m].c)],
+                        ['Gemiddeld per voertuig', ...mo.map(m => a[m].a)]
+                    ])
+                });
+                invoice(c, mo)
+            }
+            
+            function combo(id, a, mo) {
+                let o = opts();
+                o.scales.cnt = {
+                    position: 'right',
+                    beginAtZero: true,
+                    grace: '45%',
+                    grid: {
+                        drawOnChartArea: false
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Century Gothic',
+                            size: 10
+                        },
+                        callback: v => num.format(v)
+                    }
+                };
+                mk(id, {
+                    type: 'bar',
+                    data: {
+                        labels: mo.map(m => M[m]),
+                        datasets: [{
+                            label: 'Prolongatiekosten',
+                            data: mo.map(m => a[m].a),
+                            backgroundColor: C[0],
+                            order: 2,
+                            datalabels: dl
+                        }, {
+                            type: 'line',
+                            label: 'Aantal leasevoertuigen',
+                            data: mo.map(m => a[m].c > 0 ? a[m].c : null),
+                            spanGaps: false,
+                            yAxisID: 'cnt',
+                            borderColor: C[1],
+                            backgroundColor: C[1],
+                            borderWidth: 3,
+                            order: 1,
+                            tension: .2,
+                            datalabels: {
+                                display: false
+                            }
+                        }]
+                    },
+                    options: o
+                })
+            }
+            
+            function invoice(c, mo) {
+                let h = '',
+                    types = Object.values(TM).sort((a, b) => a[1] - b[1]).filter(t => c.some(x => x.type === t[0]));
+                types.forEach(t => {
+                    let r = c.filter(x => x.type === t[0]),
+                        sp = [...new Map(r.map(x => [n(x.prod), {
+                            n: x.prod,
+                            o: x.po
+                        }])).values()].sort((a, b) => a.o - b.o),
+                        b = sp.map(s => [s.n, ...mo.map(m => sum(r, x => x.m === m && n(x.prod) === n(s.n)))]);
+                    b.push(['Subtotaal ' + t[0], ...mo.map(m => sum(r, x => x.m === m))]);
+                    h += `<div class="table-block"><p class="title">${esc(t[0])}</p>${table(['Kostensoort',...mo.map(m=>M[m])],b,true)}</div>`
+                });
+                invoices.innerHTML = h
+            }
+            async function logoData() {
+                try {
+                    let i = new Image;
+                    i.crossOrigin = 'anonymous';
+                    i.src = 'logo-traxall.png';
+                    await new Promise((a, b) => {
+                        i.onload = a;
+                        i.onerror = b
+                    });
+                    let c = document.createElement('canvas');
+                    c.width = i.naturalWidth;
+                    c.height = i.naturalHeight;
+                    c.getContext('2d').drawImage(i, 0, 0);
+                    return c.toDataURL('image/png')
+                } catch {
+                    return null
+                }
+            }
+            
+            function pptMoney(v) {
+                return Math.round(Number(v) || 0)
+            }
+            async function logoAsset() {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.src = 'logo-traxall.png';
+                    await new Promise((ok, bad) => {
+                        img.onload = ok;
+                        img.onerror = bad
+                    });
+                    const cv = document.createElement('canvas');
+                    cv.width = img.naturalWidth;
+                    cv.height = img.naturalHeight;
+                    cv.getContext('2d').drawImage(img, 0, 0);
+                    return {
+                        data: cv.toDataURL('image/png'),
+                        ratio: img.naturalWidth / img.naturalHeight
+                    }
+                } catch (e) {
+                    console.warn('Logo niet geladen', e);
+                    return null
+                }
+            }
+            
+            function fitLogo(asset, x, y, maxW, maxH) {
+                if (!asset) return null;
+                let w = maxW,
+                    h = w / asset.ratio;
+                if (h > maxH) {
+                    h = maxH;
+                    w = h * asset.ratio
+                }
+                return {
+                    data: asset.data,
+                    x: x + (maxW - w) / 2,
+                    y: y + (maxH - h) / 2,
+                    w,
+                    h
+                }
+            }
+            
+            function pptTheme(p) {
+                p.author = 'TraXall';
+                p.company = 'TraXall';
+                p.subject = 'Kostenrapportage';
+                p.title = 'TraXall Kostenrapportage';
+                p.lang = 'nl-NL';
+                p.layout = 'LAYOUT_WIDE';
+                p.theme = {
+                    headFontFace: 'Century Gothic',
+                    bodyFontFace: 'Century Gothic',
+                    lang: 'nl-NL'
+                };
+                p.defineSlideMaster({
+                    title: 'TRAXALL',
+                    background: {
+                        color: 'FFFFFF'
+                    },
+                    objects: [{
+                        line: {
+                            x: .45,
+                            y: .58,
+                            w: 12.4,
+                            h: 0,
+                            line: {
+                                color: 'F6931C',
+                                width: 1.5
+                            }
+                        }
+                    }, {
+                        text: {
+                            text: 'TraXall Kostenrapportage',
+                            options: {
+                                x: .45,
+                                y: .15,
+                                w: 7,
+                                h: .3,
+                                fontFace: 'Century Gothic',
+                                fontSize: 10,
+                                bold: true,
+                                color: '213153',
+                                margin: 0
+                            }
+                        }
+                    }],
+                    slideNumber: {
+                        x: 12.25,
+                        y: 7.12,
+                        w: .45,
+                        h: .2,
+                        color: '3E3E40',
+                        fontFace: 'Century Gothic',
+                        fontSize: 8,
+                        align: 'right'
+                    },
+                    margin: 0
+                })
+            }
+            
+            function brandSlide(p, logo) {
+                const sl = p.addSlide('TRAXALL'),
+                    pos = fitLogo(logo, 11.95, .08, .8, .32);
+                if (pos) sl.addImage(pos);
+                return sl
+            }
+            
+            function addTitle(sl, title, sub = '') {
+                sl.addText(title, {
+                    x: .55,
+                    y: .72,
+                    w: 12.2,
+                    h: .42,
+                    fontFace: 'Century Gothic',
+                    fontSize: 21,
+                    bold: true,
+                    color: '213153',
+                    margin: 0,
+                    fit: 'shrink'
+                });
+                if (sub) sl.addText(sub, {
+                    x: .55,
+                    y: 1.12,
+                    w: 12.2,
+                    h: .22,
+                    fontFace: 'Century Gothic',
+                    fontSize: 9,
+                    color: '3E3E40',
+                    margin: 0
+                })
+            }
+            
+            function canvasAsset(id) {
+                const cv = document.getElementById(id);
+                if (!cv) throw new Error('Grafiek niet gevonden: ' + id);
+                return {
+                    data: cv.toDataURL('image/png', 1),
+                    ratio: cv.width / cv.height
+                }
+            }
+            
+            function fitImage(asset, boxX, boxY, boxW, boxH) {
+                let w = boxW,
+                    h = w / asset.ratio;
+                if (h > boxH) {
+                    h = boxH;
+                    w = h * asset.ratio
+                }
+                return {
+                    data: asset.data,
+                    x: boxX + (boxW - w) / 2,
+                    y: boxY + (boxH - h) / 2,
+                    w,
+                    h
+                }
+            }
+            
+            function addNoteBox(sl, x, y, w, h, fontSize = 10) {
+                sl.addText([{
+                    text: '> ',
+                    options: {
+                        fontFace: 'Century Gothic',
+                        fontSize,
+                        bold: true,
+                        color: 'F6931C'
+                    }
+                }, {
+                    text: 'Ruimte voor toelichting',
+                    options: {
+                        fontFace: 'Century Gothic',
+                        fontSize,
+                        color: '8791A5',
+                        italic: true
+                    }
+                }], {
+                    x,
+                    y,
+                    w,
+                    h,
+                    fontFace: 'Century Gothic',
+                    fontSize,
+                    margin: .06,
+                    border: {
+                        color: 'D8D9DD',
+                        pt: .6,
+                        dash: 'dash'
+                    },
+                    valign: 'mid'
+                })
+            }
+            
+            function addChartImageSlide(p, logo, title, canvasId, sub = '', supplierTableData = null, mo = []) {
+                const sl = brandSlide(p, logo);
+                addTitle(sl, title, sub);
+                const asset = canvasAsset(canvasId);
+                if (supplierTableData) {
+                    sl.addImage(fitImage(asset, .62, 1.34, 12.05, 3.32));
+                    supplierPptTable(sl, supplierTableData, mo, 4.76);
+                    addNoteBox(sl, .7, 6.12, 11.9, .42, 9)
+                } else {
+                    sl.addImage(fitImage(asset, .62, 1.34, 12.05, 4.18));
+                    addNoteBox(sl, .7, 5.84, 11.9, .58, 10)
+                }
+                return sl
+            }
+            
+            function cell(text, opt = {}) {
+                return {
+                    text: String(text),
+                    options: {
+                        fontFace: 'Century Gothic',
+                        ...opt
+                    }
+                }
+            }
+            
+            function euro(v) {
+                return '€ ' + num.format(Math.round(Number(v) || 0))
+            }
+            
+            function supplierPptTable(sl, a, mo, y) {
+                const rows = [
+                    [cell('Leverancier', {
+                        bold: true,
+                        color: 'FFFFFF',
+                        fill: '213153'
+                    }), ...mo.map(m => cell(M[m], {
+                        bold: true,
+                        color: 'FFFFFF',
+                        fill: '213153',
+                        align: 'center'
+                    }))],
+                    [cell('Prolongatiekosten', {
+                        align: 'center'
+                    }), ...mo.map(m => cell(euro(a[m].t), {
+                        align: 'center'
+                    }))],
+                    [cell('Aantal voertuigen', {
+                        align: 'center'
+                    }), ...mo.map(m => cell(num.format(a[m].c), {
+                        align: 'center'
+                    }))],
+                    [cell('Gemiddeld per voertuig', {
+                        align: 'center'
+                    }), ...mo.map(m => cell(euro(a[m].a), {
+                        align: 'center'
+                    }))]
+                ];
+                sl.addTable(rows, {
+                    x: .62,
+                    y,
+                    w: 12.05,
+                    h: 1.05,
+                    border: {
+                        type: 'solid',
+                        color: 'D8D9DD',
+                        pt: .5
+                    },
+                    fontFace: 'Century Gothic',
+                    fontSize: 7.5,
+                    margin: .025,
+                    rowH: .21,
+                    colW: [1.65, ...mo.map(() => 10.4 / mo.length)]
+                })
+            }
+            
+            function invoiceRows(c, mo) {
+                const types = Object.values(TM).sort((a, b) => a[1] - b[1]).filter(t => c.some(x => x.type === t[0]));
+                return types.map(t => {
+                    const r = c.filter(x => x.type === t[0]),
+                        spec = [...new Map(r.map(x => [n(x.prod), {
+                            n: x.prod,
+                            o: x.po
+                        }])).values()].sort((a, b) => a.o - b.o),
+                        rows = spec.map(s => [s.n, ...mo.map(m => sum(r, x => x.m === m && n(x.prod) === n(s.n)))]);
+                    rows.push(['Subtotaal ' + t[0], ...mo.map(m => sum(r, x => x.m === m))]);
+                    return {
+                        name: t[0],
+                        rows
+                    }
+                })
+            }
+            
+            function addInvoiceOverview(p, logo, c) {
+                const sl = brandSlide(p, logo);
+                addTitle(sl, 'Gefactureerde kosten alle leveranciers');
+                const mo = months(c),
+                    groups = invoiceRows(c, mo);
+                const totalUnits = groups.reduce((a, g) => a + g.rows.length + 1, 0),
+                    available = 5.65,
+                    gap = .055,
+                    rowH = Math.min(.185, (available - gap * (groups.length - 1)) / totalUnits);
+                let y = 1.28;
+                groups.forEach(g => {
+                    const header = [cell(g.name, {
+                            bold: true,
+                            color: 'FFFFFF',
+                            fill: '213153',
+                            fontSize: 6.5
+                        }), ...mo.map(m => cell(M[m], {
+                            bold: true,
+                            color: 'FFFFFF',
+                            fill: '213153',
+                            align: 'center',
+                            fontSize: 6.5
+                        }))],
+                        body = g.rows.map((r, i) => r.map((v, j) => cell(j === 0 ? v : euro(v), {
+                            fontSize: 6.5,
+                            bold: i === g.rows.length - 1,
+                            color: i === g.rows.length - 1 ? 'FFFFFF' : '213153',
+                            fill: i === g.rows.length - 1 ? 'F6931C' : (i % 2 ? 'F7F7F8' : 'FFFFFF'),
+                            align: 'center'
+                        }))),
+                        rows = [header, ...body],
+                        h = rows.length * rowH;
+                    sl.addTable(rows, {
+                        x: 1.0,
+                        y,
+                        w: 11.33,
+                        h,
+                        border: {
+                            type: 'solid',
+                            color: 'D8D9DD',
+                            pt: .3
+                        },
+                        fontFace: 'Century Gothic',
+                        fontSize: 6.5,
+                        margin: .01,
+                        rowH,
+                        colW: [2.05, ...mo.map(() => 9.28 / mo.length)],
+                        autoFit: false
+                    });
+                    y += h + gap
+                })
+            }
+            async function makePpt() {
+                if (!reportState) {
+                    status.textContent = 'Maak eerst de rapportage.';
+                    return
+                }
+                ppt.disabled = true;
+                status.textContent = 'PowerPoint wordt opgebouwd...';
+                try {
+                    await document.fonts.ready;
+                    charts.forEach(c => c.resize());
+                    await new Promise(r => setTimeout(r, 300));
+                    const {
+                        c,
+                        mo,
+                        client,
+                        cy
+                    } = reportState, P = new PptxGenJS(), logo = await logoAsset();
+                    pptTheme(P);
+                    const cover = P.addSlide();
+                    cover.background = {
+                        color: 'FFFFFF'
+                    };
+                    const coverLogo = fitLogo(logo, 4.75, .75, 3.85, 1.35);
+                    if (coverLogo) cover.addImage(coverLogo);
+                    cover.addText('TraXall Kostenrapportage', {
+                        x: 1,
+                        y: 3.0,
+                        w: 11.33,
+                        h: .55,
+                        fontFace: 'Century Gothic',
+                        fontSize: 28,
+                        bold: true,
+                        color: '213153',
+                        align: 'center',
+                        margin: 0
+                    });
+                    cover.addText(client, {
+                        x: 1,
+                        y: 3.76,
+                        w: 11.33,
+                        h: .45,
+                        fontFace: 'Century Gothic',
+                        fontSize: 22,
+                        bold: true,
+                        color: '3E3E40',
+                        align: 'center',
+                        margin: 0
+                    });
+                    cover.addText(cy, {
+                        x: 1,
+                        y: 4.32,
+                        w: 11.33,
+                        h: .4,
+                        fontFace: 'Century Gothic',
+                        fontSize: 20,
+                        color: 'F6931C',
+                        align: 'center',
+                        margin: 0
+                    });
+                    addChartImageSlide(P, logo, document.querySelector('#tot').closest('.section').querySelector('h2')
+                        .textContent, 'tot', client + ' | ' + cy);
+                    addChartImageSlide(P, logo, 'Totale kosten per kostensoort', 'types', client + ' | ' + cy);
+                    addChartImageSlide(P, logo, 'Aantal geprolongeerde voertuigen', 'veh', client + ' | ' + cy);
+                    addChartImageSlide(P, logo, 'Gemiddelde prolongatiekosten en aantal leasevoertuigen (alle leveranciers)',
+                        'all', client + ' | ' + cy);
+                    const suppliers = [...new Set(c.filter(x => n(x.prod) === 'leasetarief').map(x => x.sup))].sort();
+                    suppliers.forEach((s, i) => addChartImageSlide(P, logo, 'Gemiddelde prolongatiekosten (' + s + ')', 's' + i,
+                        client + ' | ' + cy, lm(c, s), mo));
+                    addInvoiceOverview(P, logo, c);
+                    await P.writeFile({
+                        fileName: 'TraXall_Kostenrapportage_' + cy + '.pptx'
+                    });
+                    status.textContent = 'Bewerkbare PowerPoint is gegenereerd.'
+                } catch (e) {
+                    console.error(e);
+                    status.textContent = 'PowerPoint-export mislukt: ' + e.message
+                } finally {
+                    ppt.disabled = false
+                }
+            }
+            prev.onchange = () => pn.textContent = prev.files[0]?.name || 'Geen bestand';
+            cur.onchange = () => cn.textContent = cur.files[0]?.name || 'Geen bestand';
+            document.getElementById('run').onclick = run;
+            document.getElementById('ppt').onclick = makePpt;
+            </script></body>
+        </html>
+;font-weight:400;max-width:190px;overflow:hidden;text-overflow:ellipsis}.btn.primary{color:#fff;background:linear-gradient(to right,#f6931c 0%,#f5945c 100%)}.btn:disabled{opacity:.5}.status{width:100%;font-size:12px}.wrap{width:100%;max-width:1120px;margin:0 auto;padding:18px}#report{width:100%;max-width:1080px;margin:0 auto}.section,.head,.cover{width:100%;max-width:1080px;margin-left:auto;margin-right:auto;overflow:visible}.empty,.section,.head,.cover{background:#fff;border-radius:10px;padding:18px;margin-bottom:16px}.empty{text-align:center;color:#666}.hidden{display:none}.cover{min-height:185mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;page-break-after:always;break-after:page}.cover img{width:65mm;margin-bottom:22mm}.cover h1{font-size:32px;margin:0 0 10px}.cover .client{font-size:25px;font-weight:700;color:var(--g)}.cover .year{font-size:24px;color:var(--o);margin-top:8px}.section{break-inside:avoid-page;page-break-inside:avoid}.section h2{font-size:21px;margin:0 0 14px;padding-bottom:8px;border-bottom:3px solid var(--o)}.chart{height:430px;min-height:430px;position:relative}.chart.tall{height:500px}.chart canvas{display:block;width:100%!important;max-width:100%!important;height:100%!important;margin:0 auto}.supplier{page-break-before:always;break-before:page}.table-block{break-inside:avoid-page;page-break-inside:avoid;margin-bottom:14px}.tbl{width:100%;max-width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;line-height:1.25;margin:0 auto}.tbl th,.tbl td{border:1px solid var(--line);padding:6px;text-align:center;overflow-wrap:anywhere;word-break:normal}.tbl th{background:linear-gradient(to right,#213153 0%,#213153 100%);color:#fff;font-size:11px}.tbl th:first-child,.tbl td:first-child{text-align:center;min-width:180px}.tbl tr:nth-child(even){background:#f7f7f8}.tbl .sub,.tbl .sub td{font-weight:700!important;background:#f6931c!important;color:#fff!important;border-color:#d97908!important;border-top:2px solid #d97908!important}.title{font-weight:700;margin:0 0 6px}@media print{@page{size:A4 landscape;margin:10mm 12mm}html,body{width:100%;margin:0!important;padding:0!important;background:#fff;overflow:visible}.top{display:none}.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}#report{width:100%!important;max-width:none!important;margin:0 auto!important}.section,.head,.cover{width:100%!important;max-width:none!important;margin-left:auto!important;margin-right:auto!important;border-radius:0;overflow:visible}.chart{width:100%!important;height:118mm;min-height:118mm;margin:0 auto}.table-block{width:100%;break-inside:avoid-page;page-break-inside:avoid}.tbl{width:100%!important;max-width:100%!important;margin:0 auto!important}}</style></head><body>
 <header class="top"><h1>TraXall Kostenrapportage</h1><div class="tools"><label class="upload">Kosten vorig jaar<input id="prev" type="file" accept=".xlsx,.xls"><small id="pn">Geen bestand</small></label><label class="upload">Kosten huidig jaar<input id="cur" type="file" accept=".xlsx,.xls"><small id="cn">Geen bestand</small></label><button class="btn primary" id="run">Rapportage maken</button><button class="btn" id="ppt" disabled>PowerPoint downloaden</button><div id="status" class="status">Upload minimaal Kosten huidig jaar.</div></div></header><main class="wrap"><div id="empty" class="empty">De rapportage verschijnt hier.</div><div id="report" class="hidden"></div></main>
 <script>Chart.register(ChartDataLabels);Chart.defaults.font.family='Century Gothic';Chart.defaults.font.size=14;const M=['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'],C=['#213153','#f6931c','#3e3e40','#596782','#f5a956','#69696b','#8791a5'];
 const TM={'Contractuele kosten':['Contractueel',1],Brandstof:['Brandstof',2],STR:['Huur',3],'Schade kosten':['Schade',4],Boetes:['Boetes',5],'Pool kosten':['Pool',6],'Variabele kosten':['Variabel',7]};
@@ -94,3 +1381,4 @@ function invoiceRows(c,mo){const types=Object.values(TM).sort((a,b)=>a[1]-b[1]).
 function addInvoiceOverview(p,logo,c){const sl=brandSlide(p,logo);addTitle(sl,'Gefactureerde kosten alle leveranciers');const mo=months(c),groups=invoiceRows(c,mo);const totalUnits=groups.reduce((a,g)=>a+g.rows.length+1,0),available=5.65,gap=.055,rowH=Math.min(.185,(available-gap*(groups.length-1))/totalUnits);let y=1.28;groups.forEach(g=>{const header=[cell(g.name,{bold:true,color:'FFFFFF',fill:'213153',fontSize:6.5}),...mo.map(m=>cell(M[m],{bold:true,color:'FFFFFF',fill:'213153',align:'center',fontSize:6.5}))],body=g.rows.map((r,i)=>r.map((v,j)=>cell(j===0?v:euro(v),{fontSize:6.5,bold:i===g.rows.length-1,color:i===g.rows.length-1?'FFFFFF':'213153',fill:i===g.rows.length-1?'F6931C':(i%2?'F7F7F8':'FFFFFF'),align:'center'}))),rows=[header,...body],h=rows.length*rowH;sl.addTable(rows,{x:1.0,y,w:11.33,h,border:{type:'solid',color:'D8D9DD',pt:.3},fontFace:'Century Gothic',fontSize:6.5,margin:.01,rowH,colW:[2.05,...mo.map(()=>9.28/mo.length)],autoFit:false});y+=h+gap})}
 async function makePpt(){if(!reportState){status.textContent='Maak eerst de rapportage.';return}ppt.disabled=true;status.textContent='PowerPoint wordt opgebouwd...';try{await document.fonts.ready;charts.forEach(c=>c.resize());await new Promise(r=>setTimeout(r,300));const {c,mo,client,cy}=reportState,P=new PptxGenJS(),logo=await logoAsset();pptTheme(P);const cover=P.addSlide();cover.background={color:'FFFFFF'};const coverLogo=fitLogo(logo,4.75,.75,3.85,1.35);if(coverLogo)cover.addImage(coverLogo);cover.addText('TraXall Kostenrapportage',{x:1,y:3.0,w:11.33,h:.55,fontFace:'Century Gothic',fontSize:28,bold:true,color:'213153',align:'center',margin:0});cover.addText(client,{x:1,y:3.76,w:11.33,h:.45,fontFace:'Century Gothic',fontSize:22,bold:true,color:'3E3E40',align:'center',margin:0});cover.addText(cy,{x:1,y:4.32,w:11.33,h:.4,fontFace:'Century Gothic',fontSize:20,color:'F6931C',align:'center',margin:0});addChartImageSlide(P,logo,document.querySelector('#tot').closest('.section').querySelector('h2').textContent,'tot',client+' | '+cy);addChartImageSlide(P,logo,'Totale kosten per kostensoort','types',client+' | '+cy);addChartImageSlide(P,logo,'Aantal geprolongeerde voertuigen','veh',client+' | '+cy);addChartImageSlide(P,logo,'Gemiddelde prolongatiekosten en aantal leasevoertuigen (alle leveranciers)','all',client+' | '+cy);const suppliers=[...new Set(c.filter(x=>n(x.prod)==='leasetarief').map(x=>x.sup))].sort();suppliers.forEach((s,i)=>addChartImageSlide(P,logo,'Gemiddelde prolongatiekosten ('+s+')','s'+i,client+' | '+cy,lm(c,s),mo));addInvoiceOverview(P,logo,c);await P.writeFile({fileName:'TraXall_Kostenrapportage_'+cy+'.pptx'});status.textContent='Bewerkbare PowerPoint is gegenereerd.'}catch(e){console.error(e);status.textContent='PowerPoint-export mislukt: '+e.message}finally{ppt.disabled=false}}
 prev.onchange=()=>pn.textContent=prev.files[0]?.name||'Geen bestand';cur.onchange=()=>cn.textContent=cur.files[0]?.name||'Geen bestand';document.getElementById('run').onclick=run;document.getElementById('ppt').onclick=makePpt;</script></body></html>
+
