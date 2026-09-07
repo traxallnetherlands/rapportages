@@ -249,7 +249,7 @@
         }
         
         .tbl tr:nth-child(even) {
-            background: #f7f7f8
+            background: #e8e9ec
         }
         
         .tbl .sub,
@@ -263,6 +263,7 @@
         
         .title {
             font-weight: 700;
+            text-align: center;
             margin: 0 0 6px
         }
         
@@ -275,6 +276,8 @@
 
         .excess-kpi {
             padding: 8px 6px;
+            font-family: "Century Gothic", "Tw Cen MT", Arial, sans-serif !important;
+            font-size: 11px;
             border: 1px solid var(--line);
             border-top: 3px solid var(--o);
             border-radius: 7px;
@@ -285,8 +288,29 @@
         .excess-kpi strong {
             display: block;
             margin-top: 4px;
-            font-size: 15px;
+            font-size: 11px;
             color: var(--n);
+        }
+
+        .excess-year-row {
+            display: grid;
+            grid-template-columns: .55fr repeat(5, minmax(0, 1fr));
+            gap: 8px;
+            grid-column: 1 / -1;
+        }
+
+        .excess-year {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-top: 3px solid var(--o);
+            border-radius: 7px;
+            background: #fff;
+            color: var(--n);
+            font-family: "Century Gothic", "Tw Cen MT", Arial, sans-serif !important;
+            font-size: 13px;
+            font-weight: 700;
         }
 
         @media print {
@@ -872,13 +896,14 @@
                 invoices.innerHTML = h
             }
             function excessRows(rows, category) {
+                const positiveRows = rows.filter(x => x.v > 0);
                 if (category === 'damage') {
-                    return rows.filter(x => n(x.Type_cout) === 'schade kosten');
+                    return positiveRows.filter(x => n(x.Type_cout) === 'schade kosten')
                 }
                 if (category === 'fines') {
-                    return rows.filter(x => n(x.Type_cout) === 'boetes' && n(x.prod) === 'boetes');
+                    return positiveRows.filter(x => n(x.Type_cout) === 'boetes' && n(x.prod) === 'boetes')
                 }
-                return rows.filter(x => n(x.Type_cout) === 'variabele kosten' && n(x.prod) === 'vervangend vervoer')
+                return positiveRows.filter(x => n(x.Type_cout) === 'variabele kosten' && n(x.prod) === 'vervangend vervoer')
             }
 
             function fleetPlates(rows, selectedMonths) {
@@ -910,58 +935,51 @@
                     subtypeMap.set(key, item)
                 });
                 return {
-                    filtered,
                     monthly,
                     total,
                     plates: plates.size,
                     average: plates.size ? total / plates.size : 0,
                     fleetAverage: fleet ? total / fleet : 0,
-                    fleet,
                     records: filtered.length,
                     subtypes: [...subtypeMap.values()].sort((a, b) => b.total - a.total)
                 }
             }
 
-            function standardExcessCards(metrics, category, yearLabel) {
-                const plateLabel = category === 'fines' ? 'Unieke kentekens met boetes' : 'Unieke kentekens';
-                const countLabel = category === 'fines' ? 'Totaal aantal boetes' : 'Totaal aantal registraties';
+            function baseMetricCards(metrics, category) {
+                const countTitle = category === 'fines' ? 'Aantal boetes' : 'Aantal registraties';
                 return [
-                    { title: 'Totale kosten ' + yearLabel, value: eur.format(metrics.total) },
-                    { title: plateLabel + ' ' + yearLabel, value: num.format(metrics.plates) },
-                    { title: 'Gemiddeld per kenteken ' + yearLabel, value: eur.format(metrics.average) },
-                    { title: 'Gemiddeld per kenteken (fleet) ' + yearLabel, value: eur.format(metrics.fleetAverage) },
-                    { title: countLabel + ' ' + yearLabel, value: num.format(metrics.records) }
+                    { title: 'Totale kosten', value: eur.format(metrics.total) },
+                    { title: 'Unieke kentekens', value: num.format(metrics.plates) },
+                    { title: 'Gemiddeld per kenteken', value: eur.format(metrics.average) },
+                    { title: 'Gemiddeld per kenteken (fleet)', value: eur.format(metrics.fleetAverage) },
+                    { title: countTitle, value: num.format(metrics.records) }
                 ]
             }
 
-            function excessCards(current, previous, both, category, currentYear, previousYear) {
-                if (category === 'fines' || category === 'replacement') {
-                    const cards = standardExcessCards(current, category, currentYear);
-                    if (both) cards.push(...standardExcessCards(previous, category, previousYear));
-                    return cards
-                }
-                const cards = [
-                    { title: 'Totale kosten', value: eur.format(current.total) },
-                    { title: 'Unieke kentekens met schade', value: num.format(current.plates) },
-                    { title: 'Gemiddeld per kenteken met schade', value: eur.format(current.average) },
-                    { title: 'Gemiddeld per kenteken (fleet)', value: eur.format(current.fleetAverage) },
-                    { title: 'Aantal schaderegistraties', value: num.format(current.records) }
-                ];
-                if (both) {
-                    cards.push({ title: 'Verschil t.o.v. vorig jaar', value: eur.format(current.total - previous.total) })
-                }
-                current.subtypes.forEach(item => {
-                    cards.push({
-                        title: item.name,
-                        value: 'Aantal: ' + num.format(item.count) + '\nKosten: ' + eur.format(item.total)
-                    })
-                });
+            function damageCards(current, previous, both) {
+                const cards = baseMetricCards(current, 'damage');
+                if (both) cards.push({ title: 'Verschil t.o.v. vorig jaar', value: eur.format(current.total - previous.total) });
+                current.subtypes.forEach(item => cards.push({
+                    title: item.name,
+                    value: 'Aantal: ' + num.format(item.count) + '\nKosten: ' + eur.format(item.total)
+                }));
                 return cards
             }
 
+            function metricYearRows(current, previous, both, category, currentYear, previousYear) {
+                const rows = [{ year: currentYear, cards: baseMetricCards(current, category) }];
+                if (both) rows.push({ year: previousYear, cards: baseMetricCards(previous, category) });
+                return rows
+            }
+
+            function cardHtml(card) {
+                return `<div class="excess-kpi">${esc(card.title)}<strong>${esc(card.value).replace(/\n/g, '<br>')}</strong></div>`
+            }
+
             function excessKpisHtml(current, previous, both, category, currentYear, previousYear) {
-                return excessCards(current, previous, both, category, currentYear, previousYear).map(card =>
-                    `<div class="excess-kpi">${esc(card.title)}<strong>${esc(card.value).replace(/\n/g, '<br>')}</strong></div>`
+                if (category === 'damage') return damageCards(current, previous, both).map(cardHtml).join('');
+                return metricYearRows(current, previous, both, category, currentYear, previousYear).map(row =>
+                    `<div class="excess-year-row"><div class="excess-year">${esc(row.year)}</div>${row.cards.map(cardHtml).join('')}</div>`
                 ).join('')
             }
 
@@ -976,77 +994,71 @@
                     order: 2,
                     datalabels: dl
                 }];
-                if (both) {
-                    datasets.push({
-                        type: 'line',
-                        label: 'Kosten ' + yr(previousRows),
-                        data: mo.map(m => selectedMonths.includes(m) ? previous.monthly[m].total : null),
-                        borderColor: C[1],
-                        backgroundColor: C[1],
-                        borderDash: [7, 5],
-                        borderWidth: 3,
-                        pointRadius: 2,
-                        spanGaps: false,
-                        order: 1,
-                        datalabels: { display: false }
-                    })
-                }
+                if (both) datasets.push({
+                    type: 'line',
+                    label: 'Kosten ' + yr(previousRows),
+                    data: mo.map(m => selectedMonths.includes(m) ? previous.monthly[m].total : null),
+                    borderColor: C[1],
+                    backgroundColor: C[1],
+                    borderDash: [7, 5],
+                    borderWidth: 3,
+                    pointRadius: 2,
+                    spanGaps: false,
+                    order: 1,
+                    datalabels: { display: false }
+                });
                 const options = opts();
                 options.plugins.tooltip.callbacks.afterLabel = context => {
                     const metric = context.datasetIndex === 0 ? current.monthly[mo[context.dataIndex]] : previous.monthly[mo[context.dataIndex]];
                     return 'Kentekens: ' + num.format(metric.plates) + ' | Gemiddeld: ' + eur.format(metric.average)
                 };
-                mk(canvasId, {
-                    type: 'bar',
-                    data: { labels: mo.map(m => M[m]), datasets },
-                    options
-                });
-                document.getElementById(kpiId).innerHTML = excessKpisHtml(current, previous, both, category, cy, both ? yr(previousRows) : '')
+                mk(canvasId, { type: 'bar', data: { labels: mo.map(m => M[m]), datasets }, options });
+                document.getElementById(kpiId).innerHTML = excessKpisHtml(
+                    current, previous, both, category, cy, both ? yr(previousRows) : ''
+                )
             }
 
-            function addPptExcessCards(slide, cards) {
-                const columns = 5;
-                const cardW = 2.28;
-                const cardH = .58;
-                const gapX = .10;
-                const gapY = .08;
-                const totalW = columns * cardW + (columns - 1) * gapX;
-                const startX = (13.333 - totalW) / 2;
-                cards.forEach((card, index) => {
-                    const column = index % columns;
-                    const row = Math.floor(index / columns);
-                    const x = startX + column * (cardW + gapX);
-                    const y = 4.82 + row * (cardH + gapY);
-                    slide.addText([
-                        {
-                            text: card.title + '\n',
-                            options: { fontFace: 'Century Gothic', fontSize: 7, color: '213153' }
-                        },
-                        {
-                            text: card.value,
-                            options: { fontFace: 'Century Gothic', fontSize: 9, bold: true, color: '213153' }
-                        }
-                    ], {
-                        x,
-                        y,
-                        w: cardW,
-                        h: cardH,
-                        margin: .04,
-                        align: 'center',
-                        valign: 'mid',
-                        border: { color: 'D8D9DD', pt: .5 },
-                        fill: { color: 'FFFFFF' },
-                        breakLine: false
+            function addPptCard(slide, card, x, y, w, h) {
+                slide.addText([
+                    { text: card.title + '\n', options: { fontFace: 'Century Gothic', fontSize: 11, color: '213153' } },
+                    { text: card.value, options: { fontFace: 'Century Gothic', fontSize: 11, bold: true, color: '213153' } }
+                ], {
+                    x, y, w, h,
+                    margin: .035,
+                    align: 'center',
+                    valign: 'mid',
+                    border: { color: 'D8D9DD', pt: .5 },
+                    fill: { color: 'FFFFFF' }
+                });
+                slide.addText('', { x, y, w, h: .025, margin: 0, fill: { color: 'F6931C' }, line: { color: 'F6931C', transparency: 100 } })
+            }
+
+            function addPptExcessCards(slide, current, previous, both, category, currentYear, previousYear) {
+                if (category === 'damage') {
+                    const cards = damageCards(current, previous, both);
+                    const columns = 5, cardW = 2.28, gapX = .10, cardH = .62, gapY = .08;
+                    const startX = (13.333 - (columns * cardW + (columns - 1) * gapX)) / 2;
+                    cards.forEach((card, index) => {
+                        const col = index % columns, row = Math.floor(index / columns);
+                        addPptCard(slide, card, startX + col * (cardW + gapX), 4.78 + row * (cardH + gapY), cardW, cardH)
                     });
-                    slide.addText('', {
-                        x,
-                        y,
-                        w: cardW,
-                        h: .025,
-                        margin: 0,
-                        fill: { color: 'F6931C' },
-                        line: { color: 'F6931C', transparency: 100 }
-                    })
+                    return
+                }
+                const rows = metricYearRows(current, previous, both, category, currentYear, previousYear);
+                const yearW = .72, cardW = 2.18, gapX = .08, rowH = .62;
+                const totalW = yearW + .10 + 5 * cardW + 4 * gapX;
+                const startX = (13.333 - totalW) / 2;
+                rows.forEach((row, rowIndex) => {
+                    const y = 4.78 + rowIndex * .72;
+                    slide.addText(row.year, {
+                        x: startX, y, w: yearW, h: rowH,
+                        fontFace: 'Century Gothic', fontSize: 13, bold: true, color: '213153',
+                        align: 'center', valign: 'mid', margin: .02,
+                        border: { color: 'D8D9DD', pt: .5 }, fill: { color: 'FFFFFF' }
+                    });
+                    row.cards.forEach((card, index) => addPptCard(
+                        slide, card, startX + yearW + .10 + index * (cardW + gapX), y, cardW, rowH
+                    ))
                 })
             }
 
@@ -1054,8 +1066,8 @@
                 const slide = brandSlide(pptx, logo);
                 addTitle(slide, title, client + ' | ' + cy);
                 const asset = canvasAsset(canvasId);
-                slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.20));
-                addPptExcessCards(slide, excessCards(current, previous, both, category, cy, previousYear))
+                slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.15));
+                addPptExcessCards(slide, current, previous, both, category, cy, previousYear)
             }
 
             async function logoData() {
@@ -1376,7 +1388,8 @@
                             bold: true,
                             color: 'FFFFFF',
                             fill: '213153',
-                            fontSize: 6.5
+                            fontSize: 6.5,
+                            align: 'center'
                         }), ...mo.map(m => cell(M[m], {
                             bold: true,
                             color: 'FFFFFF',
@@ -1388,7 +1401,7 @@
                             fontSize: 6.5,
                             bold: i === g.rows.length - 1,
                             color: i === g.rows.length - 1 ? 'FFFFFF' : '213153',
-                            fill: i === g.rows.length - 1 ? 'F6931C' : (i % 2 ? 'F7F7F8' : 'FFFFFF'),
+                            fill: i === g.rows.length - 1 ? 'F6931C' : (i % 2 ? 'E8E9EC' : 'FFFFFF'),
                             align: 'center'
                         }))),
                         rows = [header, ...body],
@@ -1486,7 +1499,9 @@
                     addExcessSlide(P, logo, 'Schades', 'excessDamage', excessMetrics(c, 'damage', excessMonths, c), excessMetrics(reportState.p, 'damage', excessMonths, reportState.p), reportState.both, client, cy, 'damage', reportState.both ? yr(reportState.p) : '');
                     addExcessSlide(P, logo, 'Boetes', 'excessFines', excessMetrics(c, 'fines', excessMonths, c), excessMetrics(reportState.p, 'fines', excessMonths, reportState.p), reportState.both, client, cy, 'fines', reportState.both ? yr(reportState.p) : '');
                     addExcessSlide(P, logo, 'Vervangend vervoer', 'excessReplacement', excessMetrics(c, 'replacement', excessMonths, c), excessMetrics(reportState.p, 'replacement', excessMonths, reportState.p), reportState.both, client, cy, 'replacement', reportState.both ? yr(reportState.p) : '');
-                    await P.writeFile({ fileName: 'TraXall_Kostenrapportage_' + cy + '.pptx' });
+                    await P.writeFile({
+                        fileName: 'TraXall_Kostenrapportage_' + cy + '.pptx'
+                    });
                     status.textContent = 'Bewerkbare PowerPoint is gegenereerd.'
                 } catch (e) {
                     console.error(e);
