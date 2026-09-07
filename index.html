@@ -402,7 +402,7 @@
             Chart.defaults.font.size = 14;
             const M = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'],
                 C = ['#213153', '#f6931c', '#3e3e40', '#596782', '#f5a956', '#69696b', '#8791a5'];
-            const LOGO_URL = 'https://traxallnetherlands.github.io/kostenrapportage/logo-traxall.png';
+            const LOGO_URL = 'https://traxallnetherlands.github.io/rapportages/logo-traxall.png';
             const LOGO_FALLBACK = 'logo-traxall.png';
 
             function logoUrl() {
@@ -1072,8 +1072,9 @@
                 const slide = brandSlide(pptx, logo);
                 addTitle(slide, title);
                 const asset = canvasAsset(canvasId);
-                slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.15));
-                addPptExcessCards(slide, current, previous, both, category, cy, previousYear)
+                slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.05));
+                addPptExcessCards(slide, current, previous, both, category, cy, previousYear);
+                addNoteBox(slide, .70, 6.82, 11.90, .42, 9)
             }
 
             async function logoData() {
@@ -1266,29 +1267,29 @@
             }
             
             function addNoteBox(sl, x, y, w, h, fontSize = 10) {
-                sl.addText([{
-                    text: '> ',
-                    options: {
-                        fontFace: 'Century Gothic',
-                        fontSize,
-                        bold: true,
-                        color: 'F6931C'
-                    }
-                }, {
-                    text: 'Ruimte voor toelichting',
-                    options: {
-                        fontFace: 'Century Gothic',
-                        fontSize,
-                        color: '8791A5',
-                        italic: true
-                    }
-                }], {
+                const arrowW = .28;
+                sl.addText('>', {
                     x,
                     y,
-                    w,
+                    w: arrowW,
+                    h,
+                    fontFace: 'Century Gothic',
+                    fontSize: fontSize + 2,
+                    bold: true,
+                    color: 'F6931C',
+                    align: 'center',
+                    valign: 'mid',
+                    margin: 0
+                });
+                sl.addText('Ruimte voor toelichting', {
+                    x: x + arrowW,
+                    y,
+                    w: w - arrowW,
                     h,
                     fontFace: 'Century Gothic',
                     fontSize,
+                    color: '8791A5',
+                    italic: true,
                     margin: .06,
                     border: {
                         color: 'D8D9DD',
@@ -1298,7 +1299,7 @@
                     valign: 'mid'
                 })
             }
-            
+
             function addChartImageSlide(p, logo, title, canvasId, sub = '', supplierTableData = null, mo = []) {
                 const sl = brandSlide(p, logo);
                 addTitle(sl, title, sub);
