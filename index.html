@@ -686,9 +686,9 @@
                 su.forEach((s, i) => h += sec('Gemiddelde prolongatiekosten (' + s + ')', can('s' + i) + `<div id="st${i}"></div>`,
                     'supplier'));
                 h += sec('Gefactureerde kosten alle leveranciers', '<div id="invoices"></div>');
-                h += sec('Excessen: Schades', can('excessDamage') + '<div id="excessDamageKpi" class="excess-kpis"></div>');
-                h += sec('Excessen: Boetes', can('excessFines') + '<div id="excessFinesKpi" class="excess-kpis"></div>');
-                h += sec('Excessen: Vervangend vervoer', can('excessReplacement') + '<div id="excessReplacementKpi" class="excess-kpis"></div>');
+                h += sec('Schades', can('excessDamage') + '<div id="excessDamageKpi" class="excess-kpis"></div>');
+                h += sec('Boetes', can('excessFines') + '<div id="excessFinesKpi" class="excess-kpis"></div>');
+                h += sec('Vervangend vervoer', can('excessReplacement') + '<div id="excessReplacementKpi" class="excess-kpis"></div>');
                 report.innerHTML = h;
                 report.classList.remove('hidden');
                 empty.classList.add('hidden');
@@ -922,27 +922,46 @@
                 }
             }
 
-            function excessCards(current, previous, both) {
+            function standardExcessCards(metrics, category, yearLabel) {
+                const plateLabel = category === 'fines' ? 'Unieke kentekens met boetes' : 'Unieke kentekens';
+                const countLabel = category === 'fines' ? 'Totaal aantal boetes' : 'Totaal aantal registraties';
+                return [
+                    { title: 'Totale kosten ' + yearLabel, value: eur.format(metrics.total) },
+                    { title: plateLabel + ' ' + yearLabel, value: num.format(metrics.plates) },
+                    { title: 'Gemiddeld per kenteken ' + yearLabel, value: eur.format(metrics.average) },
+                    { title: 'Gemiddeld per kenteken (fleet) ' + yearLabel, value: eur.format(metrics.fleetAverage) },
+                    { title: countLabel + ' ' + yearLabel, value: num.format(metrics.records) }
+                ]
+            }
+
+            function excessCards(current, previous, both, category, currentYear, previousYear) {
+                if (category === 'fines' || category === 'replacement') {
+                    const cards = standardExcessCards(current, category, currentYear);
+                    if (both) cards.push(...standardExcessCards(previous, category, previousYear));
+                    return cards
+                }
                 const cards = [
-                    ['Totale kosten', eur.format(current.total)],
-                    ['Unieke kentekens met excessen', num.format(current.plates)],
-                    ['Gemiddeld per kenteken met excessen', eur.format(current.average)],
-                    ['Gemiddeld per kenteken (fleet)', eur.format(current.fleetAverage)],
-                    ['Aantal registraties', num.format(current.records)]
+                    { title: 'Totale kosten', value: eur.format(current.total) },
+                    { title: 'Unieke kentekens met schade', value: num.format(current.plates) },
+                    { title: 'Gemiddeld per kenteken met schade', value: eur.format(current.average) },
+                    { title: 'Gemiddeld per kenteken (fleet)', value: eur.format(current.fleetAverage) },
+                    { title: 'Aantal schaderegistraties', value: num.format(current.records) }
                 ];
                 if (both) {
-                    cards.push(['Verschil t.o.v. vorig jaar', eur.format(current.total - previous.total)])
+                    cards.push({ title: 'Verschil t.o.v. vorig jaar', value: eur.format(current.total - previous.total) })
                 }
                 current.subtypes.forEach(item => {
-                    cards.push([item.name + ' - aantal', num.format(item.count)]);
-                    cards.push([item.name + ' - totale kosten', eur.format(item.total)])
+                    cards.push({
+                        title: item.name,
+                        value: 'Aantal: ' + num.format(item.count) + '\nKosten: ' + eur.format(item.total)
+                    })
                 });
                 return cards
             }
 
-            function excessKpisHtml(current, previous, both) {
-                return excessCards(current, previous, both).map(card =>
-                    `<div class="excess-kpi">${esc(card[0])}<strong>${esc(card[1])}</strong></div>`
+            function excessKpisHtml(current, previous, both, category, currentYear, previousYear) {
+                return excessCards(current, previous, both, category, currentYear, previousYear).map(card =>
+                    `<div class="excess-kpi">${esc(card.title)}<strong>${esc(card.value).replace(/\n/g, '<br>')}</strong></div>`
                 ).join('')
             }
 
@@ -982,13 +1001,13 @@
                     data: { labels: mo.map(m => M[m]), datasets },
                     options
                 });
-                document.getElementById(kpiId).innerHTML = excessKpisHtml(current, previous, both)
+                document.getElementById(kpiId).innerHTML = excessKpisHtml(current, previous, both, category, cy, both ? yr(previousRows) : '')
             }
 
             function addPptExcessCards(slide, cards) {
                 const columns = 5;
                 const cardW = 2.28;
-                const cardH = .52;
+                const cardH = .58;
                 const gapX = .10;
                 const gapY = .08;
                 const totalW = columns * cardW + (columns - 1) * gapX;
@@ -997,10 +1016,16 @@
                     const column = index % columns;
                     const row = Math.floor(index / columns);
                     const x = startX + column * (cardW + gapX);
-                    const y = 4.86 + row * (cardH + gapY);
+                    const y = 4.82 + row * (cardH + gapY);
                     slide.addText([
-                        { text: card[0] + '\n', options: { fontFace: 'Century Gothic', fontSize: 7, color: '213153' } },
-                        { text: card[1], options: { fontFace: 'Century Gothic', fontSize: 10, bold: true, color: '213153' } }
+                        {
+                            text: card.title + '\n',
+                            options: { fontFace: 'Century Gothic', fontSize: 7, color: '213153' }
+                        },
+                        {
+                            text: card.value,
+                            options: { fontFace: 'Century Gothic', fontSize: 9, bold: true, color: '213153' }
+                        }
                     ], {
                         x,
                         y,
@@ -1010,24 +1035,27 @@
                         align: 'center',
                         valign: 'mid',
                         border: { color: 'D8D9DD', pt: .5 },
-                        fill: { color: 'FFFFFF' }
+                        fill: { color: 'FFFFFF' },
+                        breakLine: false
                     });
-                    slide.addShape(PptxGenJS.ShapeType.line, {
+                    slide.addText('', {
                         x,
                         y,
                         w: cardW,
-                        h: 0,
-                        line: { color: 'F6931C', width: 2 }
+                        h: .025,
+                        margin: 0,
+                        fill: { color: 'F6931C' },
+                        line: { color: 'F6931C', transparency: 100 }
                     })
                 })
             }
 
-            function addExcessSlide(pptx, logo, title, canvasId, current, previous, both, client, cy) {
+            function addExcessSlide(pptx, logo, title, canvasId, current, previous, both, client, cy, category, previousYear) {
                 const slide = brandSlide(pptx, logo);
                 addTitle(slide, title, client + ' | ' + cy);
                 const asset = canvasAsset(canvasId);
-                slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.25));
-                addPptExcessCards(slide, excessCards(current, previous, both))
+                slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.20));
+                addPptExcessCards(slide, excessCards(current, previous, both, category, cy, previousYear))
             }
 
             async function logoData() {
@@ -1455,12 +1483,10 @@
                         client + ' | ' + cy, lm(c, s), mo));
                     addInvoiceOverview(P, logo, c);
                     const excessMonths = months(c);
-                    addExcessSlide(P, logo, 'Excessen: Schades', 'excessDamage', excessMetrics(c, 'damage', excessMonths, c), excessMetrics(reportState.p, 'damage', excessMonths, reportState.p), reportState.both, client, cy);
-                    addExcessSlide(P, logo, 'Excessen: Boetes', 'excessFines', excessMetrics(c, 'fines', excessMonths, c), excessMetrics(reportState.p, 'fines', excessMonths, reportState.p), reportState.both, client, cy);
-                    addExcessSlide(P, logo, 'Excessen: Vervangend vervoer', 'excessReplacement', excessMetrics(c, 'replacement', excessMonths, c), excessMetrics(reportState.p, 'replacement', excessMonths, reportState.p), reportState.both, client, cy);
-                    await P.writeFile({
-                        fileName: 'TraXall_Kostenrapportage_' + cy + '.pptx'
-                    });
+                    addExcessSlide(P, logo, 'Schades', 'excessDamage', excessMetrics(c, 'damage', excessMonths, c), excessMetrics(reportState.p, 'damage', excessMonths, reportState.p), reportState.both, client, cy, 'damage', reportState.both ? yr(reportState.p) : '');
+                    addExcessSlide(P, logo, 'Boetes', 'excessFines', excessMetrics(c, 'fines', excessMonths, c), excessMetrics(reportState.p, 'fines', excessMonths, reportState.p), reportState.both, client, cy, 'fines', reportState.both ? yr(reportState.p) : '');
+                    addExcessSlide(P, logo, 'Vervangend vervoer', 'excessReplacement', excessMetrics(c, 'replacement', excessMonths, c), excessMetrics(reportState.p, 'replacement', excessMonths, reportState.p), reportState.both, client, cy, 'replacement', reportState.both ? yr(reportState.p) : '');
+                    await P.writeFile({ fileName: 'TraXall_Kostenrapportage_' + cy + '.pptx' });
                     status.textContent = 'Bewerkbare PowerPoint is gegenereerd.'
                 } catch (e) {
                     console.error(e);
