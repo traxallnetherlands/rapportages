@@ -402,6 +402,12 @@
             Chart.defaults.font.size = 14;
             const M = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'],
                 C = ['#213153', '#f6931c', '#3e3e40', '#596782', '#f5a956', '#69696b', '#8791a5'];
+            const LOGO_URL = 'https://traxallnetherlands.github.io/kostenrapportage/logo-traxall.png';
+            const LOGO_FALLBACK = 'logo-traxall.png';
+
+            function logoUrl() {
+                return location.hostname === 'traxallnetherlands.github.io' ? LOGO_URL : LOGO_FALLBACK
+            }
             const TM = {
                 'Contractuele kosten': ['Contractueel', 1],
                 Brandstof: ['Brandstof', 2],
@@ -702,7 +708,7 @@
                     cy
                 };
                 let h =
-                    `<section class="cover"><img src="logo-traxall.png"><h1>TraXall Kostenrapportage</h1><div class="client">${esc(client)}</div><div class="year">${esc(cy)}</div></section><div class="head"><h1>Kostenrapportage</h1><p>${esc(client)} | ${esc(cy)}</p></div>`;
+                    `<section class="cover"><img src="${logoUrl()}" onerror="this.onerror=null;this.src='logo-traxall.png'"><h1>TraXall Kostenrapportage</h1><div class="client">${esc(client)}</div><div class="year">${esc(cy)}</div></section><div class="head"><h1>Kostenrapportage</h1><p>${esc(client)} | ${esc(cy)}</p></div>`;
                 h += sec(both ? 'Totale kosten per maand' : 'Totale kosten', can('tot')) + sec('Totale kosten per kostensoort', can(
                     'types', 'tall')) + sec('Aantal geprolongeerde voertuigen', can('veh')) + sec(
                     'Gemiddelde prolongatiekosten en aantal leasevoertuigen (alle leveranciers)', can('all'));
@@ -1064,7 +1070,7 @@
 
             function addExcessSlide(pptx, logo, title, canvasId, current, previous, both, client, cy, category, previousYear) {
                 const slide = brandSlide(pptx, logo);
-                addTitle(slide, title, client + ' | ' + cy);
+                addTitle(slide, title);
                 const asset = canvasAsset(canvasId);
                 slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.15));
                 addPptExcessCards(slide, current, previous, both, category, cy, previousYear)
@@ -1074,10 +1080,16 @@
                 try {
                     let i = new Image;
                     i.crossOrigin = 'anonymous';
-                    i.src = 'logo-traxall.png';
-                    await new Promise((a, b) => {
-                        i.onload = a;
-                        i.onerror = b
+                    i.src = logoUrl();
+                    await new Promise((resolve, reject) => {
+                        i.onload = resolve;
+                        i.onerror = () => {
+                            if (i.src.endsWith('/logo-traxall.png') && i.src !== new URL(LOGO_FALLBACK, location.href).href) {
+                                i.src = LOGO_FALLBACK
+                            } else {
+                                reject(new Error('TraXall-logo kon niet worden geladen'))
+                            }
+                        }
                     });
                     let c = document.createElement('canvas');
                     c.width = i.naturalWidth;
@@ -1096,10 +1108,16 @@
                 try {
                     const img = new Image();
                     img.crossOrigin = 'anonymous';
-                    img.src = 'logo-traxall.png';
-                    await new Promise((ok, bad) => {
-                        img.onload = ok;
-                        img.onerror = bad
+                    img.src = logoUrl();
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = () => {
+                            if (img.src.endsWith('/logo-traxall.png') && img.src !== new URL(LOGO_FALLBACK, location.href).href) {
+                                img.src = LOGO_FALLBACK
+                            } else {
+                                reject(new Error('TraXall-logo kon niet worden geladen'))
+                            }
+                        }
                     });
                     const cv = document.createElement('canvas');
                     cv.width = img.naturalWidth;
@@ -1486,14 +1504,14 @@
                         margin: 0
                     });
                     addChartImageSlide(P, logo, document.querySelector('#tot').closest('.section').querySelector('h2')
-                        .textContent, 'tot', client + ' | ' + cy);
-                    addChartImageSlide(P, logo, 'Totale kosten per kostensoort', 'types', client + ' | ' + cy);
-                    addChartImageSlide(P, logo, 'Aantal geprolongeerde voertuigen', 'veh', client + ' | ' + cy);
+                        .textContent, 'tot');
+                    addChartImageSlide(P, logo, 'Totale kosten per kostensoort', 'types');
+                    addChartImageSlide(P, logo, 'Aantal geprolongeerde voertuigen', 'veh');
                     addChartImageSlide(P, logo, 'Gemiddelde prolongatiekosten en aantal leasevoertuigen (alle leveranciers)',
-                        'all', client + ' | ' + cy);
+                        'all');
                     const suppliers = [...new Set(c.filter(x => n(x.prod) === 'leasetarief').map(x => x.sup))].sort();
                     suppliers.forEach((s, i) => addChartImageSlide(P, logo, 'Gemiddelde prolongatiekosten (' + s + ')', 's' + i,
-                        client + ' | ' + cy, lm(c, s), mo));
+                        '', lm(c, s), mo));
                     addInvoiceOverview(P, logo, c);
                     const excessMonths = months(c);
                     addExcessSlide(P, logo, 'Schades', 'excessDamage', excessMetrics(c, 'damage', excessMonths, c), excessMetrics(reportState.p, 'damage', excessMonths, reportState.p), reportState.both, client, cy, 'damage', reportState.both ? yr(reportState.p) : '');
