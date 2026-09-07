@@ -59,7 +59,7 @@
         
         .tools {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
             align-items: center
         }
@@ -268,13 +268,13 @@
         
         .excess-kpis {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 10px;
             margin-top: 14px;
         }
 
         .excess-kpi {
-            padding: 12px;
+            padding: 8px 6px;
             border: 1px solid var(--line);
             border-top: 3px solid var(--o);
             border-radius: 7px;
@@ -285,7 +285,7 @@
         .excess-kpi strong {
             display: block;
             margin-top: 4px;
-            font-size: 18px;
+            font-size: 15px;
             color: var(--n);
         }
 
@@ -881,8 +881,12 @@
                 return rows.filter(x => n(x.Type_cout) === 'variabele kosten' && n(x.prod) === 'vervangend vervoer')
             }
 
-            function excessMetrics(rows, category) {
-                const filtered = excessRows(rows, category);
+            function fleetPlates(rows, selectedMonths) {
+                return new Set(rows.filter(x => selectedMonths.includes(x.m)).map(x => x.plate).filter(Boolean)).size
+            }
+
+            function excessMetrics(rows, category, selectedMonths, fleetRows = rows) {
+                const filtered = excessRows(rows, category).filter(x => selectedMonths.includes(x.m));
                 const monthly = M.map((_, month) => {
                     const selection = filtered.filter(x => x.m === month);
                     const plates = new Set(selection.map(x => x.plate).filter(Boolean));
@@ -896,35 +900,56 @@
                 });
                 const plates = new Set(filtered.map(x => x.plate).filter(Boolean));
                 const total = sum(filtered);
+                const fleet = fleetPlates(fleetRows, selectedMonths);
+                const subtypeMap = new Map();
+                filtered.forEach(row => {
+                    const key = row.prod || 'Onbekend';
+                    const item = subtypeMap.get(key) || { name: key, count: 0, total: 0 };
+                    item.count += 1;
+                    item.total += row.v;
+                    subtypeMap.set(key, item)
+                });
                 return {
                     filtered,
                     monthly,
                     total,
                     plates: plates.size,
                     average: plates.size ? total / plates.size : 0,
-                    records: filtered.length
+                    fleetAverage: fleet ? total / fleet : 0,
+                    fleet,
+                    records: filtered.length,
+                    subtypes: [...subtypeMap.values()].sort((a, b) => b.total - a.total)
                 }
             }
 
-            function excessKpisHtml(current, previous, both) {
+            function excessCards(current, previous, both) {
                 const cards = [
                     ['Totale kosten', eur.format(current.total)],
-                    ['Unieke kentekens', num.format(current.plates)],
-                    ['Gemiddeld per kenteken', eur.format(current.average)],
+                    ['Unieke kentekens met excessen', num.format(current.plates)],
+                    ['Gemiddeld per kenteken met excessen', eur.format(current.average)],
+                    ['Gemiddeld per kenteken (fleet)', eur.format(current.fleetAverage)],
                     ['Aantal registraties', num.format(current.records)]
                 ];
                 if (both) {
-                    const difference = current.total - previous.total;
-                    const percent = previous.total ? difference / previous.total * 100 : null;
-                    cards.push(['Verschil t.o.v. vorig jaar', eur.format(difference)]);
-                    cards.push(['Procentuele ontwikkeling', percent === null ? 'n.v.t.' : num.format(percent) + '%'])
+                    cards.push(['Verschil t.o.v. vorig jaar', eur.format(current.total - previous.total)])
                 }
-                return cards.map(card => `<div class="excess-kpi">${esc(card[0])}<strong>${esc(card[1])}</strong></div>`).join('')
+                current.subtypes.forEach(item => {
+                    cards.push([item.name + ' - aantal', num.format(item.count)]);
+                    cards.push([item.name + ' - totale kosten', eur.format(item.total)])
+                });
+                return cards
+            }
+
+            function excessKpisHtml(current, previous, both) {
+                return excessCards(current, previous, both).map(card =>
+                    `<div class="excess-kpi">${esc(card[0])}<strong>${esc(card[1])}</strong></div>`
+                ).join('')
             }
 
             function renderExcess(category, canvasId, kpiId, currentRows, previousRows, mo, both, cy) {
-                const current = excessMetrics(currentRows, category);
-                const previous = excessMetrics(previousRows, category);
+                const selectedMonths = months(currentRows);
+                const current = excessMetrics(currentRows, category, selectedMonths, currentRows);
+                const previous = excessMetrics(previousRows, category, selectedMonths, previousRows);
                 const datasets = [{
                     label: 'Kosten ' + cy,
                     data: mo.map(m => current.monthly[m].total),
@@ -936,7 +961,7 @@
                     datasets.push({
                         type: 'line',
                         label: 'Kosten ' + yr(previousRows),
-                        data: mo.map(m => previous.monthly[m].records ? previous.monthly[m].total : null),
+                        data: mo.map(m => selectedMonths.includes(m) ? previous.monthly[m].total : null),
                         borderColor: C[1],
                         backgroundColor: C[1],
                         borderDash: [7, 5],
@@ -960,41 +985,49 @@
                 document.getElementById(kpiId).innerHTML = excessKpisHtml(current, previous, both)
             }
 
-            function excessPptRows(current, previous, both) {
-                const rows = [
-                    ['Kengetal', 'Huidig jaar', ...(both ? ['Vorig jaar', 'Verschil'] : [])],
-                    ['Totale kosten', euro(current.total), ...(both ? [euro(previous.total), euro(current.total - previous.total)] : [])],
-                    ['Unieke kentekens', num.format(current.plates), ...(both ? [num.format(previous.plates), num.format(current.plates - previous.plates)] : [])],
-                    ['Gemiddeld per kenteken', euro(current.average), ...(both ? [euro(previous.average), euro(current.average - previous.average)] : [])],
-                    ['Aantal registraties', num.format(current.records), ...(both ? [num.format(previous.records), num.format(current.records - previous.records)] : [])]
-                ];
-                return rows.map((row, rowIndex) => row.map(value => cell(value, {
-                    fontSize: 8,
-                    bold: rowIndex === 0,
-                    color: rowIndex === 0 ? 'FFFFFF' : '213153',
-                    fill: rowIndex === 0 ? '213153' : (rowIndex % 2 ? 'FFFFFF' : 'F7F7F8'),
-                    align: 'center'
-                })))
+            function addPptExcessCards(slide, cards) {
+                const columns = 5;
+                const cardW = 2.28;
+                const cardH = .52;
+                const gapX = .10;
+                const gapY = .08;
+                const totalW = columns * cardW + (columns - 1) * gapX;
+                const startX = (13.333 - totalW) / 2;
+                cards.forEach((card, index) => {
+                    const column = index % columns;
+                    const row = Math.floor(index / columns);
+                    const x = startX + column * (cardW + gapX);
+                    const y = 4.86 + row * (cardH + gapY);
+                    slide.addText([
+                        { text: card[0] + '\n', options: { fontFace: 'Century Gothic', fontSize: 7, color: '213153' } },
+                        { text: card[1], options: { fontFace: 'Century Gothic', fontSize: 10, bold: true, color: '213153' } }
+                    ], {
+                        x,
+                        y,
+                        w: cardW,
+                        h: cardH,
+                        margin: .04,
+                        align: 'center',
+                        valign: 'mid',
+                        border: { color: 'D8D9DD', pt: .5 },
+                        fill: { color: 'FFFFFF' }
+                    });
+                    slide.addShape(PptxGenJS.ShapeType.line, {
+                        x,
+                        y,
+                        w: cardW,
+                        h: 0,
+                        line: { color: 'F6931C', width: 2 }
+                    })
+                })
             }
 
             function addExcessSlide(pptx, logo, title, canvasId, current, previous, both, client, cy) {
                 const slide = brandSlide(pptx, logo);
                 addTitle(slide, title, client + ' | ' + cy);
                 const asset = canvasAsset(canvasId);
-                slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.35));
-                slide.addTable(excessPptRows(current, previous, both), {
-                    x: 2.15,
-                    y: 4.88,
-                    w: 9.03,
-                    h: 1.18,
-                    border: { type: 'solid', color: 'D8D9DD', pt: .5 },
-                    fontFace: 'Century Gothic',
-                    fontSize: 8,
-                    margin: .03,
-                    rowH: .22,
-                    colW: both ? [2.55, 2.16, 2.16, 2.16] : [4.1, 4.93]
-                });
-                addNoteBox(slide, .7, 6.25, 11.9, .42, 9)
+                slide.addImage(fitImage(asset, .72, 1.35, 11.9, 3.25));
+                addPptExcessCards(slide, excessCards(current, previous, both))
             }
 
             async function logoData() {
@@ -1421,9 +1454,10 @@
                     suppliers.forEach((s, i) => addChartImageSlide(P, logo, 'Gemiddelde prolongatiekosten (' + s + ')', 's' + i,
                         client + ' | ' + cy, lm(c, s), mo));
                     addInvoiceOverview(P, logo, c);
-                    addExcessSlide(P, logo, 'Excessen: Schades', 'excessDamage', excessMetrics(c, 'damage'), excessMetrics(reportState.p, 'damage'), reportState.both, client, cy);
-                    addExcessSlide(P, logo, 'Excessen: Boetes', 'excessFines', excessMetrics(c, 'fines'), excessMetrics(reportState.p, 'fines'), reportState.both, client, cy);
-                    addExcessSlide(P, logo, 'Excessen: Vervangend vervoer', 'excessReplacement', excessMetrics(c, 'replacement'), excessMetrics(reportState.p, 'replacement'), reportState.both, client, cy);
+                    const excessMonths = months(c);
+                    addExcessSlide(P, logo, 'Excessen: Schades', 'excessDamage', excessMetrics(c, 'damage', excessMonths, c), excessMetrics(reportState.p, 'damage', excessMonths, reportState.p), reportState.both, client, cy);
+                    addExcessSlide(P, logo, 'Excessen: Boetes', 'excessFines', excessMetrics(c, 'fines', excessMonths, c), excessMetrics(reportState.p, 'fines', excessMonths, reportState.p), reportState.both, client, cy);
+                    addExcessSlide(P, logo, 'Excessen: Vervangend vervoer', 'excessReplacement', excessMetrics(c, 'replacement', excessMonths, c), excessMetrics(reportState.p, 'replacement', excessMonths, reportState.p), reportState.both, client, cy);
                     await P.writeFile({
                         fileName: 'TraXall_Kostenrapportage_' + cy + '.pptx'
                     });
